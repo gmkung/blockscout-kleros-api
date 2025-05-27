@@ -10,6 +10,7 @@ export interface AddressTagRequest {
 export interface TokenAttributes {
   logo_url: string;
   token_symbol: string;
+  token_name: string;
   decimals: number;
 }
 

@@ -86,6 +86,7 @@ export class DataMapper {
     const props = tokenItem.metadata.props;
     const logoValue = this.findPropValue(props, 'Logo');
     const symbolValue = this.findPropValue(props, 'Symbol');
+    const nameValue = this.findPropValue(props, 'Name');
     const decimalsValue = this.findPropValue(props, 'Decimals');
 
     // Only return token attributes if we have at least symbol and decimals
@@ -102,6 +103,7 @@ export class DataMapper {
     return {
       logo_url: logoUrl,
       token_symbol: symbolValue,
+      token_name: nameValue,
       decimals: parseInt(decimalsValue, 10) || 0
     };
   }
