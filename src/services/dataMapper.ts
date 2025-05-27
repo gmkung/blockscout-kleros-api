@@ -97,7 +97,7 @@ export class DataMapper {
     // Convert IPFS path to full URL if needed
     let logoUrl = logoValue;
     if (logoValue.startsWith('/ipfs/')) {
-      logoUrl = `https://ipfs.io${logoValue}`;
+      logoUrl = `https://cdn.kleros.link${logoValue}`;
     }
 
     return {
