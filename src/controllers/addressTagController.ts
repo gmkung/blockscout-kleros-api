@@ -36,11 +36,8 @@ export class AddressTagController {
       // Process the request
       const result = await this.addressTagService.getAddressTags(request);
 
-      // Return successful response
-      res.status(200).json({
-        success: true,
-        data: result
-      } as ApiResponse<AddressTagResponse>);
+      // Return successful response with addresses at top level
+      res.status(200).json(result);
 
     } catch (error) {
       console.error('Error processing address tags request:', error);
