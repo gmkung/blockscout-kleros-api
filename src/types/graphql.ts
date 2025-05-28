@@ -20,6 +20,7 @@ export interface MetaData {
 
 export interface LItem {
   latestRequestSubmissionTime: string;
+  id: string;
   metadata: MetaData;
   itemID: string;
   registryAddress: string;

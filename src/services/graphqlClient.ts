@@ -1,12 +1,17 @@
-import { GraphQLClient } from 'graphql-request';
-import { GraphQLResponse, REGISTRY_ADDRESSES, VALID_STATUSES } from '../types/graphql';
+import { GraphQLClient } from "graphql-request";
+import {
+  GraphQLResponse,
+  REGISTRY_ADDRESSES,
+  VALID_STATUSES,
+} from "../types/graphql";
 
 /**
  * GraphQL client for querying the Curate Registry
  */
 export class CurateGraphQLClient {
   private client: GraphQLClient;
-  private readonly endpoint = 'https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest';
+  private readonly endpoint =
+    "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest";
 
   constructor() {
     this.client = new GraphQLClient(this.endpoint);
@@ -17,13 +22,13 @@ export class CurateGraphQLClient {
    */
   generateEIP155Addresses(chains: string[], addresses: string[]): string[] {
     const eip155Addresses: string[] = [];
-    
+
     for (const chainId of chains) {
       for (const address of addresses) {
         eip155Addresses.push(`eip155:${chainId}:${address}`);
       }
     }
-    
+
     return eip155Addresses;
   }
 
@@ -57,6 +62,7 @@ export class CurateGraphQLClient {
               isIdentifier
             }
           }
+          id
           itemID
           registryAddress
           status
@@ -84,6 +90,7 @@ export class CurateGraphQLClient {
               isIdentifier
             }
           }
+          id
           itemID
           registryAddress
           status
@@ -111,6 +118,7 @@ export class CurateGraphQLClient {
               isIdentifier
             }
           }
+          id
           itemID
           registryAddress
           status
@@ -123,18 +131,23 @@ export class CurateGraphQLClient {
   /**
    * Queries the GraphQL endpoint for address tag data
    */
-  async queryAddressData(chains: string[], addresses: string[]): Promise<GraphQLResponse> {
+  async queryAddressData(
+    chains: string[],
+    addresses: string[]
+  ): Promise<GraphQLResponse> {
     try {
       const eip155Addresses = this.generateEIP155Addresses(chains, addresses);
       const query = this.buildQuery(eip155Addresses);
-      
-      console.log('Querying GraphQL with EIP155 addresses:', eip155Addresses);
-      
+
+      console.log("Querying GraphQL with EIP155 addresses:", eip155Addresses);
+
       const response = await this.client.request<GraphQLResponse>(query);
       return response;
     } catch (error) {
-      console.error('GraphQL query failed:', error);
-      throw new Error(`Failed to fetch data from GraphQL endpoint: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("GraphQL query failed:", error);
+      throw new Error(
+        `Failed to fetch data from GraphQL endpoint: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
-} 
+}

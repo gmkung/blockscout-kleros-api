@@ -21,7 +21,8 @@ export interface AddressTag {
   public_note: string;
   website_link: string;
   verified_domains: string[];
-  token_attributes: TokenAttributes | null; // Optional token attributes if an address is a token
+  data_origin_link?: string; // Optional link to Kleros Scout when TagData is available
+  token_attributes: TokenAttributes | null; // Optional token attributes if an address is a token  
 }
 
 export interface AddressTagResponse {

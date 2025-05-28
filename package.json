@@ -1,5 +1,5 @@
 {
-  "name": "blockscout-api",
+  "name": "blockscout-kleros-api",
   "version": "1.0.0",
   "description": "Node.js backend service for blockchain address tagging",
   "main": "dist/index.js",

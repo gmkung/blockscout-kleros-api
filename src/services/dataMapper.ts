@@ -1,5 +1,5 @@
-import { AddressTag, TokenAttributes } from '../types/api';
-import { LItem, PropData, GraphQLResponse } from '../types/graphql';
+import { AddressTag, TokenAttributes } from "../types/api";
+import { LItem, PropData, GraphQLResponse } from "../types/graphql";
 
 /**
  * Service for mapping GraphQL response data to AddressTag format
@@ -9,23 +9,27 @@ export class DataMapper {
    * Finds a prop value by label from the props array
    */
   private findPropValue(props: PropData[], label: string): string {
-    const prop = props.find(p => p.label === label);
-    return prop?.value || '';
+    const prop = props.find((p) => p.label === label);
+    return prop?.value || "";
   }
 
   /**
    * Gets the latest item for a specific EIP155 address from an array of items
    */
   private getLatestItem(items: LItem[], eip155Address: string): LItem | null {
-    const matchingItems = items.filter(item => item.metadata.key0 === eip155Address);
-    
+    const matchingItems = items.filter(
+      (item) => item.metadata.key0 === eip155Address
+    );
+
     if (matchingItems.length === 0) {
       return null;
     }
 
     // Sort by latestRequestSubmissionTime (descending) and return the first (latest)
-    return matchingItems.sort((a, b) => 
-      parseInt(b.latestRequestSubmissionTime) - parseInt(a.latestRequestSubmissionTime)
+    return matchingItems.sort(
+      (a, b) =>
+        parseInt(b.latestRequestSubmissionTime) -
+        parseInt(a.latestRequestSubmissionTime)
     )[0];
   }
 
@@ -33,7 +37,7 @@ export class DataMapper {
    * Gets all items for a specific EIP155 address from an array of items
    */
   private getAllItems(items: LItem[], eip155Address: string): LItem[] {
-    return items.filter(item => item.metadata.key0 === eip155Address);
+    return items.filter((item) => item.metadata.key0 === eip155Address);
   }
 
   /**
@@ -42,20 +46,20 @@ export class DataMapper {
   private mapTagData(tagItem: LItem | null): Partial<AddressTag> {
     if (!tagItem) {
       return {
-        project_name: '',
-        name_tag: '',
-        public_note: '',
-        website_link: ''
+        project_name: "",
+        name_tag: "",
+        public_note: "",
+        website_link: "",
       };
     }
 
     const props = tagItem.metadata.props;
-    
+
     return {
-      project_name: this.findPropValue(props, 'Project Name'),
-      name_tag: this.findPropValue(props, 'Public Name Tag'),
-      public_note: this.findPropValue(props, 'Public Note'),
-      website_link: this.findPropValue(props, 'UI/Website Link')
+      project_name: this.findPropValue(props, "Project Name"),
+      name_tag: this.findPropValue(props, "Public Name Tag"),
+      public_note: this.findPropValue(props, "Public Note"),
+      website_link: this.findPropValue(props, "UI/Website Link"),
     };
   }
 
@@ -64,14 +68,14 @@ export class DataMapper {
    */
   private mapCdnData(cdnItems: LItem[]): string[] {
     const domains: string[] = [];
-    
+
     for (const item of cdnItems) {
-      const domainName = this.findPropValue(item.metadata.props, 'Domain name');
+      const domainName = this.findPropValue(item.metadata.props, "Domain name");
       if (domainName && !domains.includes(domainName)) {
         domains.push(domainName);
       }
     }
-    
+
     return domains;
   }
 
@@ -84,10 +88,10 @@ export class DataMapper {
     }
 
     const props = tokenItem.metadata.props;
-    const logoValue = this.findPropValue(props, 'Logo');
-    const symbolValue = this.findPropValue(props, 'Symbol');
-    const nameValue = this.findPropValue(props, 'Name');
-    const decimalsValue = this.findPropValue(props, 'Decimals');
+    const logoValue = this.findPropValue(props, "Logo");
+    const symbolValue = this.findPropValue(props, "Symbol");
+    const nameValue = this.findPropValue(props, "Name");
+    const decimalsValue = this.findPropValue(props, "Decimals");
 
     // Only return token attributes if we have at least symbol and decimals
     if (!symbolValue || !decimalsValue) {
@@ -96,7 +100,7 @@ export class DataMapper {
 
     // Convert IPFS path to full URL if needed
     let logoUrl = logoValue;
-    if (logoValue.startsWith('/ipfs/')) {
+    if (logoValue.startsWith("/ipfs/")) {
       logoUrl = `https://cdn.kleros.link${logoValue}`;
     }
 
@@ -104,7 +108,7 @@ export class DataMapper {
       logo_url: logoUrl,
       token_symbol: symbolValue,
       token_name: nameValue,
-      decimals: parseInt(decimalsValue, 10) || 0
+      decimals: parseInt(decimalsValue, 10) || 0,
     };
   }
 
@@ -112,16 +116,16 @@ export class DataMapper {
    * Extracts chain ID from EIP155 address format
    */
   private extractChainId(eip155Address: string): string {
-    const parts = eip155Address.split(':');
-    return parts.length >= 2 ? parts[1] : '';
+    const parts = eip155Address.split(":");
+    return parts.length >= 2 ? parts[1] : "";
   }
 
   /**
    * Extracts regular address from EIP155 address format
    */
   private extractAddress(eip155Address: string): string {
-    const parts = eip155Address.split(':');
-    return parts.length >= 3 ? parts[2] : '';
+    const parts = eip155Address.split(":");
+    return parts.length >= 3 ? parts[2] : "";
   }
 
   /**
@@ -143,9 +147,15 @@ export class DataMapper {
         const eip155Address = `eip155:${chainId}:${address}`;
 
         // Get the latest item from each registry for this EIP155 address
-        const latestTagItem = this.getLatestItem(response.TagData, eip155Address);
+        const latestTagItem = this.getLatestItem(
+          response.TagData,
+          eip155Address
+        );
         const allCdnItems = this.getAllItems(response.CdnData, eip155Address);
-        const latestTokenItem = this.getLatestItem(response.TokenData, eip155Address);
+        const latestTokenItem = this.getLatestItem(
+          response.TokenData,
+          eip155Address
+        );
 
         // Only create an AddressTag if we have data from at least one registry
         if (latestTagItem || allCdnItems.length > 0 || latestTokenItem) {
@@ -155,12 +165,15 @@ export class DataMapper {
 
           const addressTag: AddressTag = {
             chain_id: chainId,
-            project_name: tagData.project_name || '',
-            name_tag: tagData.name_tag || '',
-            public_note: tagData.public_note || '',
-            website_link: tagData.website_link || '',
+            project_name: tagData.project_name || "",
+            name_tag: tagData.name_tag || "",
+            public_note: tagData.public_note || "",
+            website_link: tagData.website_link || "",
             verified_domains: verifiedDomains,
-            token_attributes: tokenAttributes
+            token_attributes: tokenAttributes,
+            data_origin_link: latestTagItem 
+              ? `https://app.klerosscout.eth.limo/#/?registry=Single_Tags&itemdetails=${latestTagItem.id}`
+              : "",
           };
 
           addressTags.push(addressTag);
@@ -178,4 +191,4 @@ export class DataMapper {
 
     return result;
   }
-} 
+}
