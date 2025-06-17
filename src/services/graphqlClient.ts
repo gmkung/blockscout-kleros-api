@@ -10,11 +10,20 @@ import {
  */
 export class CurateGraphQLClient {
   private client: GraphQLClient;
-  private readonly endpoint =
-    "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest";
-
+  private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
+  private endpoint: string = "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest"
+  
+  
   constructor() {
-    this.client = new GraphQLClient(this.endpoint);
+    if (this.apiKey && process.env.CURATE_GRAPHQL_API_URL) {
+      // if API key is defined and the production API url, use the production endpoint
+      this.endpoint = process.env.CURATE_GRAPHQL_API_URL;
+      this.client = new GraphQLClient(this.endpoint, {headers: {"Authorization": `Bearer ${this.apiKey}`}});
+    } else {
+      this.client = new GraphQLClient(this.endpoint);
+    }
+    
+    console.log("Using GraphQL endpoint:", this.endpoint);
   }
 
   /**
