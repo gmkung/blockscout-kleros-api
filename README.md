@@ -105,7 +105,7 @@ cd blockscout-api
 
 2. Install dependencies:
 ```bash
-npm install
+yarn install
 ```
 
 3. Create environment file:
@@ -119,7 +119,7 @@ cp env.example .env
 
 Start the development server:
 ```bash
-npm run dev
+yarn run dev
 ```
 
 The server will start on `http://localhost:3000` by default.
@@ -128,12 +128,12 @@ The server will start on `http://localhost:3000` by default.
 
 1. Build the project:
 ```bash
-npm run build
+yarn run build
 ```
 
 2. Start the production server:
 ```bash
-npm start
+yarn start
 ```
 
 ## Project Structure
@@ -227,12 +227,12 @@ To modify or extend functionality:
 
 ## Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm test` - Run tests
+- `yarn run dev` - Start development server with hot reload
+- `yarn run build` - Build TypeScript to JavaScript
+- `yarn start` - Start production server
+- `yarn run lint` - Run ESLint
+- `yarn run lint:fix` - Fix ESLint issues
+- `yarn test` - Run tests
 
 ## License
 
