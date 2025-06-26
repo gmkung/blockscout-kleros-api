@@ -1,0 +1,29 @@
+services:
+  scout-api:
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /home/node/src/
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    command: yarn dev
+    image: scout-api:latest
+    container_name: scout-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # overwrite the log_file to use abs path inside the docker container
+      - LOG_FILE=/home/node/logs/app.log
+    volumes:
+      - ./logs:/home/node/logs:rw
+    ports:
+      - "127.0.0.1:${PORT}:${PORT}"
