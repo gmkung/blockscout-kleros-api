@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { AddressTagController } from '../controllers/addressTagController';
 import { validateAddressTagRequest } from '../middleware/validation';
+import { Logger } from 'pino';
 
 /**
  * Router for address tag related endpoints
  */
-export function createAddressTagRoutes(): Router {
+export function createAddressTagRoutes(logger: Logger): Router {
   const router = Router();
-  const controller = new AddressTagController();
+  const controller = new AddressTagController(logger);
 
   /**
    * POST /api/address-tags

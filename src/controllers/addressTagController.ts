@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AddressTagService } from '../services/addressTagService';
 import { AddressTagRequest, ApiResponse, AddressTagResponse } from '../types/api';
+import { Logger } from 'pino';
 
 /**
  * Controller for handling address tag requests
@@ -8,8 +9,8 @@ import { AddressTagRequest, ApiResponse, AddressTagResponse } from '../types/api
 export class AddressTagController {
   private addressTagService: AddressTagService;
 
-  constructor() {
-    this.addressTagService = new AddressTagService();
+  constructor(logger: Logger) {
+    this.addressTagService = new AddressTagService(logger);
   }
 
   /**
@@ -40,8 +41,7 @@ export class AddressTagController {
       res.status(200).json(result);
 
     } catch (error) {
-      console.error('Error processing address tags request:', error);
-      
+      req.log.error({ err: error }, 'Error fetching address tags');
       res.status(500).json({
         success: false,
         error: {
