@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import pino from 'pino-http';
 import { createAddressTagRoutes } from './routes/addressTagRoutes';
 
 /**
@@ -8,6 +9,33 @@ import { createAddressTagRoutes } from './routes/addressTagRoutes';
  */
 export function createApp(): express.Application {
   const app = express();
+  const logger = pino({
+    autoLogging: false,
+    transport: {
+      targets: [
+        {
+          level: process.env.LOG_LEVEL || 'debug',
+          target: 'pino/file',
+          options: {
+            destination: process.env.LOG_FILE || 1, // 1 means stdout
+            mkdir: true,
+            append: true,
+            colorize: true
+          }
+        },
+        ...(process.env.NODE_ENV === 'development' ? [
+          {
+            // Use console logging in development
+            level: process.env.LOG_LEVEL || 'debug',
+            target: 'pino/file',
+          }
+        ] : [])
+      ]
+    },
+  });
+
+  // Use Pino logger
+  app.use(logger);
 
   // Security middleware
   app.use(helmet());
@@ -25,12 +53,12 @@ export function createApp(): express.Application {
 
   // Request logging middleware
   app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    req.log.info(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
   });
 
   // API routes
-  app.use('/api', createAddressTagRoutes());
+  app.use('/api', createAddressTagRoutes(logger.logger));
 
   // Root endpoint
   app.get('/', (req, res) => {
@@ -49,6 +77,7 @@ export function createApp(): express.Application {
 
   // 404 handler
   app.use('*', (req, res) => {
+    req.log.warn(`404 Not Found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
       success: false,
       error: {
@@ -61,7 +90,7 @@ export function createApp(): express.Application {
 
   // Global error handler
   app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Unhandled error:', error);
+    req.log.error('Unhandled error:', error);
     
     res.status(500).json({
       success: false,
@@ -74,4 +103,4 @@ export function createApp(): express.Application {
   });
 
   return app;
-} 
+}

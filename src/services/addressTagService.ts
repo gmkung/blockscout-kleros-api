@@ -1,6 +1,7 @@
 import { AddressTagRequest, AddressTagResponse } from '../types/api';
 import { CurateGraphQLClient } from './graphqlClient';
 import { DataMapper } from './dataMapper';
+import { Logger } from 'pino'; // Import the Logger type
 
 /**
  * Service class for handling address tag operations
@@ -8,10 +9,12 @@ import { DataMapper } from './dataMapper';
 export class AddressTagService {
   private graphqlClient: CurateGraphQLClient;
   private dataMapper: DataMapper;
+  private logger: Logger;
 
-  constructor() {
-    this.graphqlClient = new CurateGraphQLClient();
+  constructor(logger: Logger) {
+    this.graphqlClient = new CurateGraphQLClient(logger);
     this.dataMapper = new DataMapper();
+    this.logger = logger;
   }
 
   /**
@@ -35,19 +38,17 @@ export class AddressTagService {
         addresses: mappedAddresses
       };
     } catch (error) {
-      console.error('Error fetching address tags:', error);
+      this.logger.error({ err: error }, 'Error fetching address tags');
       throw error;
     }
   }
-
-
 
   /**
    * Validates business logic constraints
    */
   validateRequest(request: AddressTagRequest): { isValid: boolean; error?: string } {
-    // Add any business logic validation here
     if (request.addresses.length > 100) {
+      this.logger.warn(`Request contains ${request.addresses.length} addresses, exceeding limit of 100`);
       return {
         isValid: false,
         error: 'Maximum 100 addresses allowed per request'
@@ -55,6 +56,7 @@ export class AddressTagService {
     }
 
     if (request.chains.length > 50) {
+      this.logger.warn(`Request contains ${request.chains.length} chains, exceeding limit of 50`);  
       return {
         isValid: false,
         error: 'Maximum 50 chains allowed per request'
@@ -63,4 +65,4 @@ export class AddressTagService {
 
     return { isValid: true };
   }
-} 
+}

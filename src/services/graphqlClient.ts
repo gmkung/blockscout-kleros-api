@@ -4,6 +4,7 @@ import {
   REGISTRY_ADDRESSES,
   VALID_STATUSES,
 } from "../types/graphql";
+import { Logger } from "pino";
 
 /**
  * GraphQL client for querying the Curate Registry
@@ -12,9 +13,10 @@ export class CurateGraphQLClient {
   private client: GraphQLClient;
   private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
   private endpoint: string = "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest"
+  private logger: Logger;
   
-  
-  constructor() {
+  constructor(logger: Logger) {
+    this.logger = logger;
     if (this.apiKey && process.env.CURATE_GRAPHQL_API_URL) {
       // if API key is defined and the production API url, use the production endpoint
       this.endpoint = process.env.CURATE_GRAPHQL_API_URL;
@@ -22,8 +24,8 @@ export class CurateGraphQLClient {
     } else {
       this.client = new GraphQLClient(this.endpoint);
     }
-    
-    console.log("Using GraphQL endpoint:", this.endpoint);
+
+    this.logger.info(`Using GraphQL endpoint: ${this.endpoint}`);
   }
 
   /**
@@ -148,12 +150,12 @@ export class CurateGraphQLClient {
       const eip155Addresses = this.generateEIP155Addresses(chains, addresses);
       const query = this.buildQuery(eip155Addresses);
 
-      console.log("Querying GraphQL with EIP155 addresses:", eip155Addresses);
+      this.logger.debug(`Querying GraphQL with EIP155 addresses: ${eip155Addresses}`);
 
       const response = await this.client.request<GraphQLResponse>(query);
       return response;
     } catch (error) {
-      console.error("GraphQL query failed:", error);
+      this.logger.error(`GraphQL query failed: ${error}`);
       throw new Error(
         `Failed to fetch data from GraphQL endpoint: ${error instanceof Error ? error.message : "Unknown error"}`
       );
