@@ -5,26 +5,24 @@ import {
   VALID_STATUSES,
 } from "../types/graphql";
 import { Logger } from "pino";
+import { ethers } from "ethers";
 
 /**
  * GraphQL client for querying the Curate Registry
  */
 export class CurateGraphQLClient {
   private client: GraphQLClient;
-  private readonly apiKey: string | undefined =
-    process.env.CURATE_GRAPHQL_API_KEY;
+  private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
   private endpoint: string;
   private logger: Logger;
-
+  
   constructor(logger: Logger) {
     this.logger = logger;
-
+    
     if (!this.apiKey) {
-      throw new Error(
-        "CURATE_GRAPHQL_API_KEY environment variable is required"
-      );
+      throw new Error('CURATE_GRAPHQL_API_KEY environment variable is required');
     }
-
+    
     this.endpoint = `https://gateway.thegraph.com/api/${this.apiKey}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`;
     this.client = new GraphQLClient(this.endpoint);
   }
@@ -48,10 +46,27 @@ export class CurateGraphQLClient {
    * Builds the GraphQL query for fetching data from all three registries
    */
   private buildQuery(eip155Addresses: string[]): string {
-    // Merge both case variations into a single array for comprehensive coverage
+    // Generate proper checksummed addresses using ethers library
+    const checksummedAddresses = eip155Addresses.map(addr => {
+      const parts = addr.split(':');
+      if (parts.length >= 3) {
+        const chainId = parts[1];
+        const address = parts[2];
+        try {
+          // Force proper checksumming by converting to lowercase first, then checksumming
+          const checksummed = ethers.getAddress(address.toLowerCase());
+          return `eip155:${chainId}:${checksummed}`;
+        } catch (error) {
+          // If checksumming fails, return original
+          return addr;
+        }
+      }
+      return addr;
+    });
+    
     const allCaseVariations = [
-      ...eip155Addresses, // Original case
-      ...eip155Addresses.map((addr) => addr.toLowerCase()), // Lowercase
+      ...checksummedAddresses, // Proper checksummed case
+      ...eip155Addresses.map(addr => addr.toLowerCase()) // Lowercase
     ];
     const addressesArray = JSON.stringify(allCaseVariations);
     const statusFilter = JSON.stringify(VALID_STATUSES);
