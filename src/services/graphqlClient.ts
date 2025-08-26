@@ -12,20 +12,18 @@ import { Logger } from "pino";
 export class CurateGraphQLClient {
   private client: GraphQLClient;
   private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
-  private endpoint: string = "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest"
+  private endpoint: string
   private logger: Logger;
   
   constructor(logger: Logger) {
     this.logger = logger;
-    if (this.apiKey && process.env.CURATE_GRAPHQL_API_URL) {
-      // if API key is defined and the production API url, use the production endpoint
-      this.endpoint = process.env.CURATE_GRAPHQL_API_URL;
-      this.client = new GraphQLClient(this.endpoint, {headers: {"Authorization": `Bearer ${this.apiKey}`}});
-    } else {
-      this.client = new GraphQLClient(this.endpoint);
+    
+    if (!this.apiKey) {
+      throw new Error('CURATE_GRAPHQL_API_KEY environment variable is required');
     }
-
-    this.logger.info(`Using GraphQL endpoint: ${this.endpoint}`);
+    
+    this.endpoint = `https://gateway.thegraph.com/api/${this.apiKey}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`;
+    this.client = new GraphQLClient(this.endpoint);
   }
 
   /**
