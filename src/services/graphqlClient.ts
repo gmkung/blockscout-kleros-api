@@ -11,17 +11,20 @@ import { Logger } from "pino";
  */
 export class CurateGraphQLClient {
   private client: GraphQLClient;
-  private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
-  private endpoint: string
+  private readonly apiKey: string | undefined =
+    process.env.CURATE_GRAPHQL_API_KEY;
+  private endpoint: string;
   private logger: Logger;
-  
+
   constructor(logger: Logger) {
     this.logger = logger;
-    
+
     if (!this.apiKey) {
-      throw new Error('CURATE_GRAPHQL_API_KEY environment variable is required');
+      throw new Error(
+        "CURATE_GRAPHQL_API_KEY environment variable is required"
+      );
     }
-    
+
     this.endpoint = `https://gateway.thegraph.com/api/${this.apiKey}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`;
     this.client = new GraphQLClient(this.endpoint);
   }
@@ -48,7 +51,7 @@ export class CurateGraphQLClient {
     // Merge both case variations into a single array for comprehensive coverage
     const allCaseVariations = [
       ...eip155Addresses, // Original case
-      ...eip155Addresses.map(addr => addr.toLowerCase()) // Lowercase
+      ...eip155Addresses.map((addr) => addr.toLowerCase()), // Lowercase
     ];
     const addressesArray = JSON.stringify(allCaseVariations);
     const statusFilter = JSON.stringify(VALID_STATUSES);
@@ -153,30 +156,12 @@ export class CurateGraphQLClient {
       const eip155Addresses = this.generateEIP155Addresses(chains, addresses);
       const query = this.buildQuery(eip155Addresses);
 
-      // Log the GraphQL request details
-      console.log('=== GRAPHQL REQUEST DEBUG ===');
-      console.log('Endpoint:', this.endpoint);
-      console.log('Input chains:', chains);
-      console.log('Input addresses:', addresses);
-      console.log('Generated EIP155 addresses (original case):', eip155Addresses);
-      console.log('Merged case variations for query:', [
-        ...eip155Addresses,
-        ...eip155Addresses.map(addr => addr.toLowerCase())
-      ]);
-      console.log('Full GraphQL Query:');
-      console.log(query);
-      console.log('=== END GRAPHQL REQUEST DEBUG ===');
-
-      this.logger.debug(`Querying GraphQL with EIP155 addresses: ${eip155Addresses}`);
+      this.logger.debug(
+        `Querying GraphQL with EIP155 addresses: ${eip155Addresses}`
+      );
 
       const response = await this.client.request<GraphQLResponse>(query);
-      
-      // Log the GraphQL response
-      console.log('=== GRAPHQL RESPONSE DEBUG ===');
-      console.log('Response status: Success');
-      console.log('Response data:', JSON.stringify(response, null, 2));
-      console.log('=== END GRAPHQL RESPONSE DEBUG ===');
-      
+
       return response;
     } catch (error) {
       this.logger.error(`GraphQL query failed: ${error}`);
