@@ -5,6 +5,7 @@ import {
   VALID_STATUSES,
 } from "../types/graphql";
 import { Logger } from "pino";
+import { ethers } from "ethers";
 
 /**
  * GraphQL client for querying the Curate Registry
@@ -12,20 +13,18 @@ import { Logger } from "pino";
 export class CurateGraphQLClient {
   private client: GraphQLClient;
   private readonly apiKey: string | undefined = process.env.CURATE_GRAPHQL_API_KEY;
-  private endpoint: string = "https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest"
+  private endpoint: string;
   private logger: Logger;
   
   constructor(logger: Logger) {
     this.logger = logger;
-    if (this.apiKey && process.env.CURATE_GRAPHQL_API_URL) {
-      // if API key is defined and the production API url, use the production endpoint
-      this.endpoint = process.env.CURATE_GRAPHQL_API_URL;
-      this.client = new GraphQLClient(this.endpoint, {headers: {"Authorization": `Bearer ${this.apiKey}`}});
-    } else {
-      this.client = new GraphQLClient(this.endpoint);
+    
+    if (!this.apiKey) {
+      throw new Error('CURATE_GRAPHQL_API_KEY environment variable is required');
     }
-
-    this.logger.info(`Using GraphQL endpoint: ${this.endpoint}`);
+    
+    this.endpoint = `https://gateway.thegraph.com/api/${this.apiKey}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`;
+    this.client = new GraphQLClient(this.endpoint);
   }
 
   /**
@@ -47,7 +46,29 @@ export class CurateGraphQLClient {
    * Builds the GraphQL query for fetching data from all three registries
    */
   private buildQuery(eip155Addresses: string[]): string {
-    const addressesArray = JSON.stringify(eip155Addresses);
+    // Generate proper checksummed addresses using ethers library
+    const checksummedAddresses = eip155Addresses.map(addr => {
+      const parts = addr.split(':');
+      if (parts.length >= 3) {
+        const chainId = parts[1];
+        const address = parts[2];
+        try {
+          // Force proper checksumming by converting to lowercase first, then checksumming
+          const checksummed = ethers.getAddress(address.toLowerCase());
+          return `eip155:${chainId}:${checksummed}`;
+        } catch (error) {
+          // If checksumming fails, return original
+          return addr;
+        }
+      }
+      return addr;
+    });
+    
+    const allCaseVariations = [
+      ...checksummedAddresses, // Proper checksummed case
+      ...eip155Addresses.map(addr => addr.toLowerCase()) // Lowercase
+    ];
+    const addressesArray = JSON.stringify(allCaseVariations);
     const statusFilter = JSON.stringify(VALID_STATUSES);
 
     return `
@@ -150,9 +171,12 @@ export class CurateGraphQLClient {
       const eip155Addresses = this.generateEIP155Addresses(chains, addresses);
       const query = this.buildQuery(eip155Addresses);
 
-      this.logger.debug(`Querying GraphQL with EIP155 addresses: ${eip155Addresses}`);
+      this.logger.debug(
+        `Querying GraphQL with EIP155 addresses: ${eip155Addresses}`
+      );
 
       const response = await this.client.request<GraphQLResponse>(query);
+
       return response;
     } catch (error) {
       this.logger.error(`GraphQL query failed: ${error}`);

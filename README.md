@@ -20,14 +20,19 @@ A Node.js backend service that provides address tagging functionality for EVM bl
 Retrieves address tags for given chains and addresses from the Kleros Curate Registry.
 
 **Request Body:**
+
 ```json
 {
   "chains": ["1", "137", "56"],
-  "addresses": ["0x1234567890123456789012345678901234567890", "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"]
+  "addresses": [
+    "0x1234567890123456789012345678901234567890",
+    "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+  ]
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -77,6 +82,7 @@ Retrieves address tags for given chains and addresses from the Kleros Curate Reg
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -92,23 +98,26 @@ Health check endpoint.
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd blockscout-api
 ```
 
 2. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 3. Create environment file:
+
 ```bash
 cp env.example .env
 ```
@@ -118,6 +127,7 @@ cp env.example .env
 ### Development
 
 Start the development server:
+
 ```bash
 yarn run dev
 ```
@@ -127,11 +137,13 @@ The server will start on `http://localhost:3000` by default.
 ### Production
 
 1. Build the project:
+
 ```bash
 yarn run build
 ```
 
 2. Start the production server:
+
 ```bash
 yarn start
 ```
@@ -160,14 +172,17 @@ src/
 ## Validation Rules
 
 ### Addresses
+
 - Must be valid Ethereum addresses (42 characters starting with '0x')
 - Case-insensitive hex format
 
 ### Chain IDs
+
 - Must be positive numeric strings
 - Examples: "1" (Ethereum), "137" (Polygon), "56" (BSC)
 
 ### Request Limits
+
 - Maximum 100 addresses per request
 - Maximum 50 chains per request
 
@@ -187,6 +202,7 @@ The API returns structured error responses:
 ```
 
 Common error codes:
+
 - `VALIDATION_ERROR`: Invalid request format or parameters
 - `BUSINESS_LOGIC_ERROR`: Request exceeds limits or business rules
 - `INTERNAL_SERVER_ERROR`: Unexpected server error
@@ -198,19 +214,21 @@ Common error codes:
 The service integrates with three Kleros Curate registries:
 
 1. **TagData Registry** - Contains project names, name tags, public notes, and website links
-2. **TokenData Registry** - Contains token-specific information (symbols, names, decimals, logos)  
+2. **TokenData Registry** - Contains token-specific information (symbols, names, decimals, logos)
 3. **CDN Registry** - Contains verified domain names
 
 ### GraphQL Integration
 
 The service uses GraphQL to query the Kleros Curate subgraph:
-- Endpoint: `https://api.studio.thegraph.com/query/61738/legacy-curate-gnosis/version/latest`
+
+- Endpoint: `https://gateway.thegraph.com/api/${CURATE_GRAPHQL_API_KEY}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`
 - Queries all three registries simultaneously for efficiency
 - Filters by valid statuses: "Registered" and "ClearingRequested"
 
 ### Data Mapping
 
 The `DataMapper` service handles:
+
 - Converting EIP155 addresses to chain-specific lookups
 - Selecting the latest submissions based on timestamp
 - Aggregating data from multiple registries per address
@@ -236,4 +254,4 @@ To modify or extend functionality:
 
 ## License
 
-MIT 
+MIT

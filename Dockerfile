@@ -12,6 +12,10 @@ FROM node:22.16-alpine AS dev
 # Set to production environment to have development parity with the productions stage.
 ENV NODE_ENV=production
 
+ARG YARN_VERSION=4.9.2
+RUN corepack enable \
+    && corepack prepare "yarn@${YARN_VERSION}" --activate
+
 # Create user folder
 WORKDIR /home/node
 
@@ -24,7 +28,6 @@ COPY --chown=node:node  package.json yarn.lock .yarnrc.yml ./
 # Install all dependencies (dev & production). devDependencies are needed to run
 # locally for development and also to build the images in the next stage.
 # with yarn4 there is no need to pass the --production=false flag.
-RUN yarn set version 4.9.1
 RUN yarn install
 
 # Copy source code into app folder
@@ -42,6 +45,10 @@ ENV NODE_ENV=production
 
 WORKDIR /home/node
 
+ARG YARN_VERSION=4.9.2
+RUN corepack enable \
+    && corepack prepare "yarn@${YARN_VERSION}" --activate
+
 USER node
 
 # Copy just bin and built code needed to run the application
@@ -52,7 +59,6 @@ COPY --from=dev --chown=node:node  /home/node/package.json /home/node/yarn.lock 
 
 # Install only the production dependencies and clean cache to optimize image size.
 # This overrides node_modules folder, reducing image size.
-RUN yarn set version 4.9.1
 RUN yarn workspaces focus --production && yarn cache clean
 
 CMD ["yarn", "start"]

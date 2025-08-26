@@ -18,7 +18,7 @@ export class DataMapper {
    */
   private getLatestItem(items: LItem[], eip155Address: string): LItem | null {
     const matchingItems = items.filter(
-      (item) => item.metadata.key0 === eip155Address
+      (item) => item.metadata.key0.toLowerCase() === eip155Address.toLowerCase()
     );
 
     if (matchingItems.length === 0) {
@@ -37,7 +37,7 @@ export class DataMapper {
    * Gets all items for a specific EIP155 address from an array of items
    */
   private getAllItems(items: LItem[], eip155Address: string): LItem[] {
-    return items.filter((item) => item.metadata.key0 === eip155Address);
+    return items.filter((item) => item.metadata.key0.toLowerCase() === eip155Address.toLowerCase());
   }
 
   /**
