@@ -18,6 +18,7 @@ export interface MetaData {
   props: PropData[];
 }
 
+// The Graph format - metadata nested
 export interface LItem {
   latestRequestSubmissionTime: string;
   id: string;
@@ -28,11 +29,39 @@ export interface LItem {
   disputed: boolean;
 }
 
+// Envio format - metadata at top level
+export interface EnvioLItem {
+  latestRequestSubmissionTime: string;
+  id: string;
+  key0: string;
+  key1: string;
+  key2: string;
+  key3: string;
+  props: PropData[];
+  itemID: string;
+  registryAddress: string;
+  status: string;
+  disputed: boolean;
+}
+
+// The Graph response format
 export interface GraphQLResponse {
   TagData: LItem[];
   TokenData: LItem[];
   CdnData: LItem[];
 }
+
+// Envio response format
+export interface EnvioGraphQLResponse {
+  TagData: EnvioLItem[];
+  TokenData: EnvioLItem[];
+  CdnData: EnvioLItem[];
+}
+
+/**
+ * Endpoint types
+ */
+export type EndpointType = "thegraph" | "envio";
 
 /**
  * Registry addresses for the three different data sources
@@ -40,10 +69,10 @@ export interface GraphQLResponse {
 export const REGISTRY_ADDRESSES = {
   TAG_DATA: "0x66260c69d03837016d88c9877e61e08ef74c59f2",
   TOKEN_DATA: "0xee1502e29795ef6c2d60f8d7120596abe3bad990",
-  CDN_DATA: "0x957a53a994860be4750810131d9c876b2f52d6e1"
+  CDN_DATA: "0x957a53a994860be4750810131d9c876b2f52d6e1",
 } as const;
 
 /**
  * Valid status values for filtering
  */
-export const VALID_STATUSES = ["Registered", "ClearingRequested"] as const; 
+export const VALID_STATUSES = ["Registered", "ClearingRequested"] as const;

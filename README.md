@@ -124,6 +124,44 @@ cp env.example .env
 
 4. Configure environment variables in `.env` file as needed.
 
+### Environment Variables
+
+#### GraphQL Endpoint Configuration
+
+The service supports two GraphQL endpoint types: **The Graph** and **Envio**.
+
+**Common Variables:**
+- `GRAPHQL_ENDPOINT_TYPE` - Endpoint type to use: `thegraph` or `envio` (default: `thegraph`)
+
+**The Graph (default):**
+- `CURATE_GRAPHQL_API_KEY` - Your The Graph API key (required for `thegraph` endpoint)
+- Uses endpoint: `https://gateway.thegraph.com/api/{API_KEY}/subgraphs/id/{SUBGRAPH_ID}`
+
+**Envio (alternative):**
+- `ENVIO_ENDPOINT` - Envio GraphQL endpoint (optional, defaults to `https://indexer.hyperindex.xyz/1a2f51c/v1/graphql`)
+- No API key required - free to use
+
+**Example `.env` configurations:**
+
+Using The Graph (requires API key):
+```env
+GRAPHQL_ENDPOINT_TYPE=thegraph
+CURATE_GRAPHQL_API_KEY=your_api_key_here
+```
+
+Using Envio (no API key needed):
+```env
+GRAPHQL_ENDPOINT_TYPE=envio
+ENVIO_ENDPOINT=https://indexer.hyperindex.xyz/1a2f51c/v1/graphql
+```
+
+**Other Variables:**
+- `PORT` - Server port (default: 3000)
+- `LOG_LEVEL` - Log level: debug, info, warn, error (default: debug)
+- `LOG_FILE` - Log file path (default: stdout)
+- `NODE_ENV` - Environment: development, production (default: development)
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed CORS origins (default: *)
+
 ### Development
 
 Start the development server:
@@ -219,11 +257,24 @@ The service integrates with three Kleros Curate registries:
 
 ### GraphQL Integration
 
-The service uses GraphQL to query the Kleros Curate subgraph:
+The service supports two GraphQL endpoints for querying the Kleros Curate Registry:
 
+**The Graph (default):**
 - Endpoint: `https://gateway.thegraph.com/api/${CURATE_GRAPHQL_API_KEY}/subgraphs/id/9hHo5MpjpC1JqfD3BsgFnojGurXRHTrHWcUcZPPCo6m8`
+- Requires API key
+- Uses `litems` entity with nested `metadata` structure
+- Filter syntax: `field_in`, `field_gt`, `orderBy/orderDirection`
+
+**Envio (alternative):**
+- Endpoint: `https://indexer.hyperindex.xyz/1a2f51c/v1/graphql`
+- Free, no authentication required
+- Uses `LItem` entity with flat metadata structure (Hasura-based)
+- Filter syntax: `{_in}`, `{_gt}`, `{_eq}`, `order_by: {}`
+
+**Common Features:**
 - Queries all three registries simultaneously for efficiency
 - Filters by valid statuses: "Registered" and "ClearingRequested"
+- Responses are normalized to a common format for consistency
 
 ### Data Mapping
 
